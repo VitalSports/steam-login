@@ -5,9 +5,9 @@ var express = require('express'),
 
 var relyingParty, apiKey, useSession = true;
 
-module.exports.middleware = function(opts)
+module.exports.init = function(opts)
 {
-	relyingParty = new openid.RelyingParty(
+    relyingParty = new openid.RelyingParty(
 		opts.verify,
 		opts.realm,
 		true,
@@ -15,11 +15,7 @@ module.exports.middleware = function(opts)
 		[]
 	);
 
-	apiKey = opts.apiKey;
-
-	return function(req, res, next) {
-		next();
-	};
+    apiKey = opts.apiKey;
 }
 
 module.exports.enforceLogin = function(redirect)
