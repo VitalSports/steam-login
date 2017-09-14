@@ -27,28 +27,27 @@ module.exports.enforceLogin = function(redirect)
 	};
 }
 
-module.exports.verify = function()
+module.exports.verify = function(req, callback)
 {
-	return function(req, res, next) {
-		relyingParty.verifyAssertion(req, function(err, result) {
-			if(err)
-				return next(err.message);
-			if(!result || !result.authenticated)
-				return next('Failed to authenticate user.');
-			if(!/^https?:\/\/steamcommunity\.com\/openid\/id\/\d+$/.test(result.claimedIdentifier))
-				return next('Claimed identity is not valid.');
-			fetchIdentifier(result.claimedIdentifier)
-				.then(function(user) {
-					req.steamUser = user;
-					next();
-				})
-				.catch(function(err)
-				{
-					next(err);
-				});
+	relyingParty.verifyAssertion(req, function(err, result) {
+		if(err)
+            return callback({error: err.message}, null);
+		if(!result || !result.authenticated)
+			return callback({error: 'Failed to authenticate user.'}, null);
+		if(!/^https?:\/\/steamcommunity\.com\/openid\/id\/\d+$/.test(result.claimedIdentifier))
+			return callback({error: 'Claimed identity is not valid.'}, null);
 
-		});
-	};
+		fetchIdentifier(result.claimedIdentifier)
+			.then(function(user) {
+                callback(false, user);
+			})
+			.catch(function(err)
+			{
+				callback(err, null);
+			}
+        );
+
+	});
 }
 
 module.exports.authenticate = function(callback)
