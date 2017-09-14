@@ -51,18 +51,21 @@ module.exports.verify = function()
 	};
 }
 
-module.exports.authenticate = function()
+module.exports.authenticate = function(callback)
 {
 	return function(req, res, next) {
 		relyingParty.authenticate('http://steamcommunity.com/openid', false, function(err, authURL) {
-			if(err)
-			{
+			if(err) {
 				console.log(err);
-				return next('Authentication failed: ' + err);
+                callback({error: "Authentication failed: " + err}, null);
+				return;
 			}
-			if(!authURL)
-				return next('Authentication failed.');
-			res.redirect(authURL);
+			if(!authURL) {
+                callback({error: "Authentication failed."}, null);
+                return;
+            }
+            
+			callback(false, authURL);
 		});
 	};
 }
