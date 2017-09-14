@@ -16,19 +16,8 @@ module.exports.middleware = function(opts)
 	);
 
 	apiKey = opts.apiKey;
-	useSession = true;
-	if(opts.useSession !== undefined)
-	{
-		useSession = opts.useSession;
-	}
 
 	return function(req, res, next) {
-		if(req.session && req.session.steamUser)
-		{
-			req.user = req.session.steamUser;
-			req.logout = logout(req);
-		}
-
 		next();
 	};
 }
@@ -54,19 +43,14 @@ module.exports.verify = function()
 				return next('Claimed identity is not valid.');
 			fetchIdentifier(result.claimedIdentifier)
 				.then(function(user) {
-					req.user = user;
-					if(useSession)
-					{
-						req.session.steamUser = req.user;
-						req.logout = logout(req);
-					}
+					req.steamUser = user;
 					next();
 				})
 				.catch(function(err)
 				{
 					next(err);
 				});
-			
+
 		});
 	};
 }
@@ -75,7 +59,7 @@ module.exports.authenticate = function()
 {
 	return function(req, res, next) {
 		relyingParty.authenticate('http://steamcommunity.com/openid', false, function(err, authURL) {
-			if(err) 
+			if(err)
 			{
 				console.log(err);
 				return next('Authentication failed: ' + err);
@@ -110,12 +94,4 @@ function fetchIdentifier(steamID)
 				}
 			});
 		});
-}
-
-function logout(req)
-{
-	return function() {
-		delete req.session.steamUser;
-		req.user = null;
-	}
 }
