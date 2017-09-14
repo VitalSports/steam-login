@@ -53,21 +53,20 @@ module.exports.verify = function()
 
 module.exports.authenticate = function(callback)
 {
-	return function(req, res, next) {
-		relyingParty.authenticate('http://steamcommunity.com/openid', false, function(err, authURL) {
-			if(err) {
-				console.log(err);
-                callback({error: "Authentication failed: " + err}, null);
-				return;
-			}
-			if(!authURL) {
-                callback({error: "Authentication failed."}, null);
-                return;
-            }
-            
-			callback(false, authURL);
-		});
-	};
+	relyingParty.authenticate('http://steamcommunity.com/openid', false, function(err, authURL) {
+		if(err) {
+			console.log(err);
+            callback({error: "Authentication failed: " + err}, null);
+			return;
+		}
+		if(!authURL) {
+            console.log('Steam auth url not found.')
+            callback({error: "Authentication failed."}, null);
+            return;
+        }
+
+		callback(false, authURL);
+	});
 }
 
 function fetchIdentifier(steamID)
